@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://by88vd70yi1tj"]
+
+[ext_resource type="Script" uid="uid://ra2n643ucwu0" path="res://tests/test_app.gd" id="1_oaicl"]
+[ext_resource type="Texture2D" uid="uid://csbnkc4gyc1i0" path="res://media/logo.png" id="2_oxmao"]
+
+[node name="Konsole" type="Control" unique_id=566444731]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_oaicl")
+
+[node name="TextureRect" type="ColorRect" parent="." unique_id=1736855747]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.20511743, 0.20511743, 0.20511743, 1)
+
+[node name="Logo" type="TextureRect" parent="." unique_id=360949878]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -160.0
+offset_right = 160.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_oxmao")
+stretch_mode = 2
+
+[node name="Hint" type="Label" parent="." unique_id=81496589]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -154.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "To open the console, simply press 'KEY'"
+horizontal_alignment = 1

@@ -1,0 +1,124 @@
+[gd_scene format=3 uid="uid://c1eh5jea2ope8"]
+
+[ext_resource type="Theme" uid="uid://bjxo34p5tj3ej" path="res://addons/gdkonsole/theme.tres" id="1_f56gv"]
+[ext_resource type="Script" uid="uid://dgy37ko5c3r4u" path="res://addons/gdkonsole/input.gd" id="1_pfw8u"]
+[ext_resource type="Script" uid="uid://o87olfej4moq" path="res://addons/gdkonsole/autocomplete.gd" id="2_idn4x"]
+[ext_resource type="Script" uid="uid://b0sdacrh72ids" path="res://addons/gdkonsole/content.gd" id="2_wgxto"]
+
+[sub_resource type="Gradient" id="Gradient_f56gv"]
+colors = PackedColorArray(0.0627451, 0.0627451, 0.0627451, 0.7058824, 0.18039216, 0.18039216, 0.18039216, 0.7058824)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_wgxto"]
+gradient = SubResource("Gradient_f56gv")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f56gv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_heu4y"]
+content_margin_left = 6.0
+content_margin_right = 6.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.40832946, 0.40832946, 0.40832946, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_heu4y"]
+
+[sub_resource type="Animation" id="Animation_heu4y"]
+resource_name = "Dropdown"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Console:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, -450), Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_bjx3t"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Console:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0qywh"]
+_data = {
+&"Dropdown": SubResource("Animation_heu4y"),
+&"RESET": SubResource("Animation_bjx3t")
+}
+
+[node name="Gui" type="CanvasLayer" unique_id=2115101895]
+layer = 50
+
+[node name="Console" type="TextureRect" parent="." unique_id=1159187486]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 277.0
+grow_horizontal = 2
+theme = ExtResource("1_f56gv")
+texture = SubResource("GradientTexture1D_wgxto")
+
+[node name="Layout" type="VBoxContainer" parent="Console" unique_id=1964254518]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Console/Layout" unique_id=1084326085]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Content" type="RichTextLabel" parent="Console/Layout/ScrollContainer" unique_id=649086055]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_f56gv")
+bbcode_enabled = true
+fit_content = true
+autowrap_mode = 1
+context_menu_enabled = true
+selection_enabled = true
+script = ExtResource("2_wgxto")
+
+[node name="Input" type="LineEdit" parent="Console/Layout" unique_id=1864591171]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_heu4y")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_heu4y")
+keep_editing_on_text_submit = true
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+caret_force_displayed = true
+script = ExtResource("1_pfw8u")
+
+[node name="Autocomplete" type="PanelContainer" parent="Console/Layout/Input" unique_id=900043628]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 31.0
+offset_right = 9.0
+offset_bottom = 31.0
+script = ExtResource("2_idn4x")
+
+[node name="Layout" type="VBoxContainer" parent="Console/Layout/Input/Autocomplete" unique_id=1122714323]
+layout_mode = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2128471018]
+libraries/ = SubResource("AnimationLibrary_0qywh")

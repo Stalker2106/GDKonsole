@@ -1,0 +1,18 @@
+[gd_resource type="Theme" format=3 uid="uid://bjxo34p5tj3ej"]
+
+[ext_resource type="FontFile" uid="uid://c535htgl42ovf" path="res://addons/gdkonsole/font/CourierPrimeRegular.ttf" id="1_5ej0i"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5ej0i"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p58h4"]
+bg_color = Color(0.8217887, 0.8217887, 0.8217885, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gc7g4"]
+
+[resource]
+Label/fonts/font = ExtResource("1_5ej0i")
+LineEdit/fonts/font = ExtResource("1_5ej0i")
+RichTextLabel/fonts/normal_font = ExtResource("1_5ej0i")
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_5ej0i")
+VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_p58h4")
+VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_gc7g4")

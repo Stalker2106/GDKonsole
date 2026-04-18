@@ -1,0 +1,30 @@
+name: Release
+ 
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+ 
+permissions:
+  contents: write
+ 
+jobs:
+  release:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+ 
+      - name: Package addons folder
+        run: |
+          zip -r "GDKonsole-${{ github.ref_name }}.zip" addons/
+ 
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ github.ref_name }}"
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: GDKonsole-${{ github.ref_name }}.zip
+ 
