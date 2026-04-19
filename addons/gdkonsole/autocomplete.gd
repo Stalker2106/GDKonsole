@@ -20,9 +20,10 @@ func _input(event: InputEvent) -> void:
 
 func move_autocomplete_idx(amount: int):
     # Remove old style if any
-    var old_entry = get_entry(autocomplete_idx);
-    if old_entry:
-        old_entry.add_theme_stylebox_override("normal", StyleBoxEmpty.new());
+    if autocomplete_idx != -1:
+        var old_entry = get_entry(autocomplete_idx);
+        if old_entry:
+            old_entry.add_theme_stylebox_override("normal", StyleBoxEmpty.new());
     # Move autocomplete cursor
     autocomplete_idx += amount;
     if autocomplete_idx >= layout.get_child_count():
@@ -37,30 +38,48 @@ func move_autocomplete_idx(amount: int):
         var active_style = StyleBoxFlat.new();
         active_style.bg_color = Color.WEB_GRAY;
         new_entry.add_theme_stylebox_override("normal", active_style);
-        get_parent().overwrite_text(new_entry.get_text(), false);
+        get_parent().overwrite_text(new_entry.get_meta("identifier"), false);
 
-func update(predicate: String):
+func update(text: String):
+    var predicate = text.strip_edges();
+    predicate = predicate.substr(0, predicate.find(" "));
     if predicate.length() < 1:
         visible = false;
         return; # Skip no text
     temp = predicate;
     clear_entries();
     var all_commands = get_node("/root/GDKonsole").commands;
+    var all_cvars = get_node("/root/GDKonsole").cvars;
     var candidates = [];
     for command in all_commands.keys():
         if command.begins_with(predicate):
-            candidates.push_back(command);
+            candidates.push_back({
+                "identifier": command,
+                "text": all_commands[command].get_usage_string(),
+                "kind": GDKonsoleCommand
+            });
+    for cvar in all_cvars.keys():
+        if cvar.begins_with(predicate):
+            candidates.push_back({
+                "identifier": cvar,
+                "text": all_cvars[cvar].get_string(),
+                "kind": GDKonsoleCvar
+            });
     if candidates.size() > 0:
-        candidates.sort();
-        for command in candidates:
-            add_entry(command);
+        candidates.sort_custom(func(a, b): return a["identifier"] < b["identifier"]);
+        for entry_data in candidates:
+            add_entry(entry_data);
         visible = true;
     else:
         visible = false;
 
-func add_entry(command: String):
-    var entry = Label.new();
-    entry.set_text(command);
+func add_entry(entry_data: Dictionary):
+    var entry = RichTextLabel.new();
+    entry.fit_content = true;
+    entry.autowrap_mode = TextServer.AUTOWRAP_OFF;
+    entry.append_text(entry_data.text);
+    entry.set_meta("identifier", entry_data.identifier);
+    entry.set_meta("kind", entry_data.kind);
     layout.add_child(entry);
     
 func clear_entries():
@@ -68,5 +87,5 @@ func clear_entries():
     for child in layout.get_children():
         child.queue_free();
 
-func get_entry(idx: int) -> Label:
+func get_entry(idx: int) -> RichTextLabel:
     return layout.get_child(idx);

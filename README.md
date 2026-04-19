@@ -4,7 +4,7 @@
  
 A simple Quake-style developer console for Godot 4. Drop it into any project to get an in-game terminal for debugging, running commands, and building developer tools — without touching your game logic.
  
-![GDKonsole screenshot](media/screenshot.png)
+![GDKonsole screenshot](media/demo.gif)
  
 ---
  
@@ -13,7 +13,9 @@ A simple Quake-style developer console for Godot 4. Drop it into any project to 
 - Lightweight — no dependencies, pure GDScript
 - Print messages, allow code execution directly from the console
 - Register custom commands with typed arguments, and default values
+- Register CVars — named runtime variables you can read and set from the console
 - Autocomplete based on registered commands.
+- Error handling, and Godot debugger redirection
 - Commands history
 ---
  
@@ -61,7 +63,7 @@ GDKonsole.add_command("kill_anything", actor_manager, "kill_any") \
 ```
 
 Add arguments, that can be of any type supported by `Variant.Type` Godot enum.
-(Complex types like Vector2 are not yet supported)
+Internally, GDKonsole uses Godot `str_to_var` to convert types.
 
 ```gdscript
 GDKonsole.add_command("kill_player", actor_manager, "kill_player") \
@@ -81,9 +83,28 @@ GDKonsole.add_command("enable_cheats", game_manager, "enable_cheats") \
 
 Commands are called when the user types their name and presses Enter.
  
+### Registering CVars
+
+CVars (Console Variables) are named variables bound to properties on your objects.
+
+Bind any property on any object:
+```gdscript
+GDKonsole.add_cvar("sv_gravity", physics_manager, "gravity") \
+    .set_description("World gravity value");
+```
+
+To read a CVar value, just type it, and autocomplete will show the current value.
+NOTE: autocomplete shown value is captured at time of writing, and not kept up to date.
+
+To set a CVar value, enter it, and give the value like so:
+```GDKonsole
+sv_gravity 500.0
+```
+
 ### Builtins
 
 help - Prints all commands and their usage.
+exec - Run all commands from file at given path.
 
 ---
  

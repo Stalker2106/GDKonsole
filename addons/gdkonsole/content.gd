@@ -1,17 +1,17 @@
 extends RichTextLabel
 
-const MAX_LINES = 5;
+const MAX_LINES = 500;
 
 var scroll_container : ScrollContainer;
 
 func _ready():
     scroll_container = get_parent();
+    push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
 
 func write(msg: String = "", color: Color = GDKonsole.colors.default):
     # Remove lines exceeding quota
-    if get_line_count() > MAX_LINES:
-        var to_erase = get_line_width(0);
-        text.erase(0, to_erase);
+    while get_line_count() > MAX_LINES:
+        remove_paragraph(0);
     var formatted_msg = msg;
     # Apply color if needed
     if color != GDKonsole.colors.default:
@@ -21,9 +21,8 @@ func write(msg: String = "", color: Color = GDKonsole.colors.default):
     scroll_to_bottom();
 
 func write_line(msg: String = "", color: Color = GDKonsole.colors.default):
-    var text = get_parsed_text();
-    if !text.is_empty() && text.right(1) != "\n":
-        msg = "\n"+msg;
+    newline();
+    push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
     write(msg, color);
 
 func scroll_to_bottom():

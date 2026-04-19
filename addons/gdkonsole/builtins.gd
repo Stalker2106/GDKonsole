@@ -7,7 +7,7 @@ static func print_help():
     var all_commands = GDKonsole.commands;
     GDKonsole.write_line("List of available commands:");
     for cmd_name in all_commands.keys():
-        GDKonsole.write_line(all_commands[cmd_name].get_usage_string());
+        GDKonsole.write_line(all_commands[cmd_name].get_desc_string());
 
 static func exec(path: String):
     var script = FileAccess.open(path, FileAccess.READ);

@@ -47,31 +47,11 @@ func execute(argv : Array):
     var casted_argv = [];
     for arg_idx in range(0, arg_count):
         var expected_type = arguments[arg_idx].type;
-        match expected_type:
-            TYPE_INT:
-                if argv[arg_idx].is_valid_int():
-                    casted_argv.push_back(int(argv[arg_idx]));
-                else:
-                    GDKonsole.write_error("Error: Argument %d is not a valid int." % arg_idx);
-                    return;
-            TYPE_FLOAT:
-                if argv[arg_idx].is_valid_float():
-                    casted_argv.push_back(float(argv[arg_idx]));
-                else:
-                    GDKonsole.write_error("Error: Argument %d is not a valid float." % arg_idx);
-                    return;
-            TYPE_BOOL:
-                if argv[arg_idx] is bool:
-                    casted_argv.push_back(argv[arg_idx]);
-                elif argv[arg_idx] == "true" || (argv[arg_idx].is_valid_int() && int(argv[arg_idx]) != 0):
-                    casted_argv.push_back(true);
-                elif argv[arg_idx] == "false" || (argv[arg_idx].is_valid_int() && int(argv[arg_idx]) == 0):
-                    casted_argv.push_back(false);
-                else:
-                    GDKonsole.write_error("Error: Argument %d is not a valid bool" % [arg_idx]);
-                    return;
-            _:
-                casted_argv.push_back(argv[arg_idx]);
+        # Handle extracting args from prompt string (default values are variant injected)
+        if argv[arg_idx] is String:
+            casted_argv.push_back(GDKonsole.str_to_variant(argv[arg_idx], expected_type));
+        else:
+            casted_argv.push_back(argv[arg_idx]);
     callback.callv(casted_argv);
 
 func get_usage_string() -> String:
@@ -82,6 +62,10 @@ func get_usage_string() -> String:
             if arg.default != null:
                 str +=  "=%s" % str(arg.default);
             str +=  ">";
+    return str;
+
+func get_desc_string() -> String:
+    var str = get_usage_string();
     if description:
         str += "  [color=%s]%s[/color]" % [GDKonsole.colors.comment.to_html(false), description];
     return str;
