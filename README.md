@@ -1,5 +1,3 @@
-![GDKonsole screenshot](media/logo.png)
-
 # GDKonsole
  
 A simple Quake-style developer console for Godot 4. Drop it into any project to get an in-game terminal for debugging, running commands, and building developer tools — without touching your game logic.
