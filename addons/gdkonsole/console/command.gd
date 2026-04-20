@@ -1,15 +1,20 @@
 extends RefCounted
 class_name GDKonsoleCommand
 
+signal called;
+
 var name : String;
 var description : String;
 var arguments : Array;
 
 var callback : Callable;
 
-func _init(name_: String, target_obj_ : Object, target_method_ : String):
+func _init(name_: String, target_obj : Object, target_method : String):
     name = name_;
-    callback = Callable(target_obj_, target_method_);
+    if !target_obj.has_method(target_method):
+        GDKonsole.write_error("Error: Method `%s` does not exist in target object `%s`." % [target_method, target_obj.name]);
+        return;
+    callback = Callable(target_obj, target_method);
     arguments = [];
 
 func set_description(description_ : String) -> GDKonsoleCommand:
@@ -17,6 +22,10 @@ func set_description(description_ : String) -> GDKonsoleCommand:
     return self;
 
 func add_argument(name_: String, type_: Variant.Type, default_value: Variant = null) -> GDKonsoleCommand:
+    var cb_arg_count = callback.get_argument_count();
+    if arguments.size() >= cb_arg_count:
+        GDKonsole.write_error("Error: Too many arguments: callback registered expects %d arguments." % cb_arg_count);
+        return;
     arguments.push_back({"name": name_, "type": type_, "default": default_value});
     return self;
 
@@ -43,6 +52,11 @@ func execute(argv : Array):
     # Insert default values
     for arg_idx in range(0, arg_count - argc):
         argv.push_front(arguments[arg_idx].default);
+    # Check cb arguments
+    var cb_arg_count = callback.get_argument_count();
+    if argv.size() != cb_arg_count:
+        GDKonsole.write_error("Error: Bad command: callback registered expects %d arguments." % cb_arg_count);
+        return;
     # Execution
     var casted_argv = [];
     for arg_idx in range(0, arg_count):
@@ -53,6 +67,7 @@ func execute(argv : Array):
         else:
             casted_argv.push_back(argv[arg_idx]);
     callback.callv(casted_argv);
+    called.emit();
 
 func get_usage_string() -> String:
     var str = "[color=%s]%s[/color]" % [GDKonsole.colors.command.to_html(false), name];

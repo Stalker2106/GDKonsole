@@ -37,10 +37,16 @@ Press the toggle key (not bound by default) during runtime to open or close the 
  
 ### Writing to the console
  
+You can write text to the console using the following API calls:
+Console uses Godot RichTextLabel BBCode ([reference manual](https://docs.godotengine.org/en/latest/tutorials/ui/bbcode_in_richtextlabel.html))
+
 ```gdscript
 GDKonsole.write("Hello, world!");
+GDKonsole.write("Hello, yellow world!", Color.Yellow); # Console supports color
+
 GDKonsole.write_line("This gets its own line.");
-GDKonsole.write_line("[color=green]Let's touch some grass![/color]"); # Console uses Godot RichTextLabel BBCode
+
+GDKonsole.write_line("[bgcolor=green]Let's touch some grass![/bgcolor]"); # Write BBCode
 ```
  
 ### Registering commands
@@ -99,10 +105,50 @@ To set a CVar value, enter it, and give the value like so:
 sv_gravity 500.0
 ```
 
+### Interacting with GDKonsole
+
+The console binds signals to Commands, you can connect them and perform actions when signal triggers
+```gdscript
+var my_cmd = GDKonsole.add_command("destroy_world", world_manager, "destroy");
+
+await my_cmd.called;
+print("The command was called!" % value);
+```
+
+CVars also provide signals:
+```gdscript
+var my_cvar = GDKonsole.add_cvar("sv_gravity", physics_manager, "gravity");
+
+var value = await my_cvar.value_set;
+print("Value was set to %d via console!" % value);
+```
+
+### Customizing GDKonsole
+
+The console comes with a default theme. There are two ways to customize it:
+
+#### Change only colors
+
+Colors can be changed by overriding them directly on GDKonsole object
+
+```gdscript
+GDKonsole.colors.background = Color.Red;
+GDKonsole.colors.default = Color("#ffffff");
+```
+
+#### Change console theme
+
+If you want the console to match your theme, simply override its theme using
+
+```gdscript
+GDKonsole.override_theme(my_theme); # my_theme is a Resource of type Theme
+```
+
 ### Builtins
 
 help - Prints all commands and their usage.
 exec - Run all commands from file at given path.
+inspect <node_path:String> - Inspects node at given node_path
 
 ---
  

@@ -3,7 +3,7 @@ extends EditorPlugin
 
 
 func _enable_plugin() -> void:
-    self.add_autoload_singleton("GDKonsole", get_script().resource_path.get_base_dir()+"/gdkonsole.gd");
+    self.add_autoload_singleton("GDKonsole", get_script().resource_path.get_base_dir()+"/console/gdkonsole.gd");
     # Add toggle action
     if not InputMap.has_action("gdkonsole_toggle"):
         InputMap.add_action("gdkonsole_toggle", 0.5);

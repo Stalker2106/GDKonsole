@@ -1,6 +1,8 @@
 extends RefCounted
 class_name GDKonsoleCvar
 
+signal value_set;
+
 var name : String;
 var description : String;
 var target_obj : Object;
@@ -28,11 +30,12 @@ func set_value(argv: Array) -> void:
         GDKonsole.write_error("Error: %s: setting cvar expects 1 argument, %d provided." % [err, argc]);
         return;
     # Set
-    if argv[0] is String:
+    var val = argv[0];
+    if val is String:
         var type_hint = typeof(target_obj.get(target_property));
-        target_obj.set(target_property, GDKonsole.str_to_variant(argv[0], type_hint));
-    else:
-        target_obj.set(target_property, argv[0]);
+        val = GDKonsole.str_to_variant(argv[0], type_hint);
+    target_obj.set(target_property, val);
+    value_set.emit(val);
 
 func get_string() -> String:
     return "[color=%s]%s[/color] %s" % [GDKonsole.colors.cvar.to_html(false), name, str(get_value())];

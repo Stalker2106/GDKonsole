@@ -36,9 +36,12 @@ func move_autocomplete_idx(amount: int):
     var new_entry = get_entry(autocomplete_idx);
     if new_entry:
         var active_style = StyleBoxFlat.new();
-        active_style.bg_color = Color.WEB_GRAY;
+        active_style.bg_color = GDKonsole.colors.hover;
         new_entry.add_theme_stylebox_override("normal", active_style);
-        get_parent().overwrite_text(new_entry.get_meta("identifier"), false);
+        var text = new_entry.get_meta("identifier");
+        if new_entry.get_meta("argc") > 0:
+            text += " ";
+        get_parent().overwrite_text(text, false);
 
 func update(text: String):
     var predicate = text.strip_edges();
@@ -46,7 +49,7 @@ func update(text: String):
     if predicate.length() < 1:
         visible = false;
         return; # Skip no text
-    temp = predicate;
+    temp = text;
     clear_entries();
     var all_commands = get_node("/root/GDKonsole").commands;
     var all_cvars = get_node("/root/GDKonsole").cvars;
@@ -55,6 +58,7 @@ func update(text: String):
         if command.begins_with(predicate):
             candidates.push_back({
                 "identifier": command,
+                "argc": all_commands[command].arguments.size(),
                 "text": all_commands[command].get_usage_string(),
                 "kind": GDKonsoleCommand
             });
@@ -62,6 +66,7 @@ func update(text: String):
         if cvar.begins_with(predicate):
             candidates.push_back({
                 "identifier": cvar,
+                "argc": 1,
                 "text": all_cvars[cvar].get_string(),
                 "kind": GDKonsoleCvar
             });
@@ -79,6 +84,7 @@ func add_entry(entry_data: Dictionary):
     entry.autowrap_mode = TextServer.AUTOWRAP_OFF;
     entry.append_text(entry_data.text);
     entry.set_meta("identifier", entry_data.identifier);
+    entry.set_meta("argc", entry_data.argc);
     entry.set_meta("kind", entry_data.kind);
     layout.add_child(entry);
     

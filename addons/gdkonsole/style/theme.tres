@@ -1,0 +1,38 @@
+[gd_resource type="Theme" format=3 uid="uid://bjxo34p5tj3ej"]
+
+[ext_resource type="FontFile" uid="uid://c535htgl42ovf" path="res://addons/gdkonsole/font/CourierPrimeRegular.ttf" id="1_gk1mp"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_gk1mp"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_heu4y"]
+content_margin_left = 6.0
+content_margin_right = 6.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.40832946, 0.40832946, 0.40832946, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lrso0"]
+bg_color = Color(0.18717611, 0.18717617, 0.18717602, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gk1mp"]
+bg_color = Color(0.47843137, 0.47058824, 0.38039216, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_02w2u"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gc7g4"]
+
+[resource]
+Label/fonts/font = ExtResource("1_gk1mp")
+LineEdit/fonts/font = ExtResource("1_gk1mp")
+LineEdit/styles/focus = SubResource("StyleBoxEmpty_gk1mp")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_heu4y")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_lrso0")
+RichTextLabel/colors/default_color = Color(1, 1, 1, 1)
+RichTextLabel/colors/selection_color = Color(0.1, 0.1, 1, 0.8)
+RichTextLabel/fonts/normal_font = ExtResource("1_gk1mp")
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_gk1mp")
+VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_02w2u")
+VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_gc7g4")
