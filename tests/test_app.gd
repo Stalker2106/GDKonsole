@@ -46,7 +46,7 @@ func run_api_tests():
     assert_true(testcmd.add_argument("arg", TYPE_INT) != null);
     # Test
     GDKonsole.write_line("Test 4: register command with existing name");
-    assert_true(GDKonsole.add_command("help", self, "dummycall") == null);
+    assert_true(GDKonsole.add_command("commands", self, "dummycall") == null);
     # Test
     GDKonsole.write_line("Test 5: eval registered command with bad arg type");
     GDKonsole.eval("test ABC");
@@ -72,6 +72,12 @@ func run_api_tests():
     GDKonsole.write_line("Test 9: set cvar");
     GDKonsole.eval("cvar 1");
     assert_true(cvar_var == 1);
+    assert_true(cvar != null);
+    # Test
+    GDKonsole.write_line("Test 10: test help builtins");
+    GDKonsole.eval("commands");
+    GDKonsole.eval("cvars");
+    assert_true(true);
     # Summary
     print_summary();
        

@@ -1,9 +1,10 @@
 extends RefCounted
 
 # UI
-const background = Color("#1A1A1A");
+const background = Color("#1A1A1AC8");
 const border = Color("#7A7861");
-const hover = Color("#949380");
+const hover = Color("#6F6E5A");
+
 # Text
 const default = Color("#FFFFFF");
 const error = Color("#D25353");

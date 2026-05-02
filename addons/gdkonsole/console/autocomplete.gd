@@ -12,11 +12,13 @@ func _ready() -> void:
     layout = get_node("Layout");
 
 func _input(event: InputEvent) -> void:
-    if visible:
-        if event is InputEventKey && event.is_pressed():
-            if event.keycode == KEY_TAB:
-                move_autocomplete_idx(1);
-                get_viewport().set_input_as_handled();
+    if !visible:
+        return; # Do nothing if not visible
+    var shift_pressed = Input.is_key_pressed(KEY_SHIFT);
+    if event is InputEventKey && event.is_pressed():
+        if event.keycode == KEY_TAB:
+            move_autocomplete_idx(-1 if shift_pressed else 1);
+            get_viewport().set_input_as_handled();
 
 func move_autocomplete_idx(amount: int):
     # Remove old style if any
@@ -35,13 +37,15 @@ func move_autocomplete_idx(amount: int):
     # Handle autocomplete
     var new_entry = get_entry(autocomplete_idx);
     if new_entry:
+        # Set entry background hovered
         var active_style = StyleBoxFlat.new();
         active_style.bg_color = GDKonsole.colors.hover;
         new_entry.add_theme_stylebox_override("normal", active_style);
-        var text = new_entry.get_meta("identifier");
+        # Replace input text
+        var text_to_set = new_entry.get_meta("identifier");
         if new_entry.get_meta("argc") > 0:
-            text += " ";
-        get_parent().overwrite_text(text, false);
+            text_to_set += " ";
+        get_parent().overwrite_text(text_to_set, false);
 
 func update(text: String):
     var predicate = text.strip_edges();

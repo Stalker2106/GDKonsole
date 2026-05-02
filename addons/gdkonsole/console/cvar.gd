@@ -39,3 +39,9 @@ func set_value(argv: Array) -> void:
 
 func get_string() -> String:
     return "[color=%s]%s[/color] %s" % [GDKonsole.colors.cvar.to_html(false), name, str(get_value())];
+
+func get_desc_string() -> String:
+    var str = get_string();
+    if description:
+        str += "  [color=%s]%s[/color]" % [GDKonsole.colors.comment.to_html(false), description];
+    return str;

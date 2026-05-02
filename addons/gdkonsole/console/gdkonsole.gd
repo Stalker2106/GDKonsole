@@ -4,7 +4,7 @@ signal toggled;
 
 var GUIScene = preload("../GUI.tscn");
 
-var constants;
+var config;
 var colors;
 var builtins;
 
@@ -21,8 +21,8 @@ var visible : bool;
 func _init() -> void:
     commands = {};
     cvars = {};
-    # Load colors & constants
-    constants = load("res://addons/gdkonsole/style/constants.gd").new();
+    # Load colors & config
+    config = load("res://addons/gdkonsole/config.gd").new();
     colors = load("res://addons/gdkonsole/style/colors.gd").new();
 
 func _ready() -> void:
@@ -30,36 +30,38 @@ func _ready() -> void:
     animator = gui.get_node("AnimationPlayer");
     add_child(gui);
     gui.visible = false;
-    get_tree().root.connect("size_changed", Callable(self, "reload_constants"));
+    get_tree().root.connect("size_changed", Callable(self, "reload_config"));
     # Bind locals
     content = gui.get_node("Console/Layout/ScrollContainer/Content");
     kinput = gui.get_node("Console/Layout/Input");
     kinput.connect("text_submitted", Callable(self, "eval_input"));
     # Intercept godot msg/errors
-    if constants.enable_gdlogger_intercept:
-        OS.add_logger(load("res://addons/gdkonsole/console/gdintercept.gd").new());
+    OS.add_logger(load("res://addons/gdkonsole/console/gdintercept.gd").new());
     # Register Builtins
     builtins = load("res://addons/gdkonsole/console/builtins.gd").new();
     add_command("echo", builtins, "print").add_argument("text", TYPE_STRING).set_description("Prints text to console");
-    add_command("help", builtins, "print_help").set_description("Shows all existing commands");
+    add_command("commands", builtins, "print_all_commands").set_description("Shows all existing commands");
+    add_command("cvars", builtins, "print_all_cvars").set_description("Shows all registered CVars");
     add_command("exec", builtins, "exec").add_argument("path", TYPE_STRING).set_description("Executes a file containing commands from given path (line by line)");
+    add_command("eval", builtins, "eval").add_argument("gdscript", TYPE_STRING).set_description("Evaluates a snippet of GDScript and prints result");
     # Complimentary builtins
-    if constants.allow_inputmap_edition:
+    if config.allow_inputmap_edition:
         add_command("bind", builtins, "bind").add_argument("key", TYPE_STRING) \
             .add_argument("action", TYPE_STRING).set_description("Binds a key to an action");
         add_command("unbind", builtins, "bind").add_argument("key", TYPE_STRING) \
             .add_argument("action", TYPE_STRING).set_description("Unbinds a key from an action");
-    if constants.allow_tree_edition:
+    if config.allow_tree_edition:
         add_command("inspect", builtins, "inspect_node").add_argument("node_path", TYPE_STRING) \
             .set_description("Inspects node at node_path");
-    # Apply styles & constants
+    # Apply styles & config
     reload_styles();
-    reload_constants();
+    reload_config();
 
 func reload_styles():
     # Theme
     var theme = gui.get_node("Console").theme;
-    theme.set_color("panel", "PanelContainer", GDKonsole.colors.background);
+    var panelstyle = theme.get_stylebox("panel", "PanelContainer");
+    panelstyle.bg_color = GDKonsole.colors.background;
     var inputstyle = theme.get_stylebox("normal", "LineEdit");
     inputstyle.border_color = GDKonsole.colors.border;
     theme.set_color("default_color", "RichTextLabel", GDKonsole.colors.default);
@@ -71,11 +73,15 @@ func reload_styles():
     scrollstyle = theme.get_stylebox("grabber_pressed", "VScrollBar");
     scrollstyle.bg_color = GDKonsole.colors.border;
 
-func reload_constants():
+func reload_config():
     var console = gui.get_node("Console");
     # Size
     var vp_size = get_viewport().get_visible_rect().size;
-    var size_factor = float(GDKonsole.constants.console_height.replace("%", "")) / 100;
+    var height_percent = GDKonsole.config.console_height.replace("%", "");
+    if !height_percent.is_valid_float():
+        write_error("Error: constant `console_height` has invalid value (must be \"X%\")");
+        height_percent = "40%"; # Set 40% as default
+    var size_factor = float(height_percent) / 100;
     console.size = Vector2(vp_size.x, vp_size.y * size_factor);
     console.position = Vector2(0, -console.size.y if !gui.visible else 0);
     # Anims
@@ -96,11 +102,11 @@ func _input(event: InputEvent) -> void:
         emit_signal("toggled", visible);
         if !gui.visible:
             gui.visible = true;
-            animator.play("Dropdown", -1, constants.toggle_speed);
+            animator.play("Dropdown", -1, config.toggle_speed);
             kinput.grab_focus();
         else:
             kinput.release_focus();
-            animator.play("Dropdown", -1, -constants.toggle_speed, true);
+            animator.play("Dropdown", -1, -config.toggle_speed, true);
             await animator.animation_finished;
             gui.visible = false;
 
@@ -123,6 +129,9 @@ func add_cvar(name: String, target_obj: Object, target_property: String) -> GDKo
 func add_command(name: String, target_obj: Object, target_method: String) -> GDKonsoleCommand:
     if !register_guard(name):
         return;
+    if !target_obj.has_method(target_method):
+        write_error("Error: unable to register `%s`. Method `%s` doesn't exist in target object" % name);
+        return null;
     var cmd = GDKonsoleCommand.new(name, target_obj, target_method);
     commands[name] = cmd;
     return cmd;
@@ -183,7 +192,7 @@ func eval(buffer: String, historize: bool = false) -> bool:
     elif commands.has(identifier):
         commands[identifier].execute(argv);
         return true;
-    write_error("Identifier `[color=%s]%s[/color]` not found. type '[color=%s]help[/color]' to view all commands" % [GDKonsole.colors.command.to_html(false), identifier, GDKonsole.colors.command.to_html(false)]);
+    write_error("Identifier `[color=%s]%s[/color]` not found. type '[color=%s]commands[/color]' to view available commands" % [GDKonsole.colors.command.to_html(false), identifier, GDKonsole.colors.command.to_html(false)]);
     return false;
 
 # Content passthrough

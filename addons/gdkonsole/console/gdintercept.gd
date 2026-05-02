@@ -1,6 +1,8 @@
 extends Logger
 
 func _log_message(message: String, error: bool) -> void:
+    if !GDKonsole.config.enable_gdmessage_intercept:
+        return; #Logging messages are disabled
     if error:
         GDKonsole.write_error(message);
     else:
@@ -16,6 +18,8 @@ func _log_error(
     error_type: int,
     script_backtraces: Array[ScriptBacktrace]
 ) -> void:
+    if !GDKonsole.config.enable_gderror_intercept:
+        return; #Logging errors are disabled
     var location = "%s:%d (%s)" % [file, line, function]
     var msg = "[%s] %s — %s" % [code, rationale, location]
     

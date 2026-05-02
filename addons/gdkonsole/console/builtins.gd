@@ -3,11 +3,17 @@ extends Node
 static func print(msg: String):
     GDKonsole.write_line(msg);
 
-static func print_help():
+static func print_all_commands():
     var all_commands = GDKonsole.commands;
     GDKonsole.write_line("List of available commands:");
     for cmd_name in all_commands.keys():
         GDKonsole.write_line(all_commands[cmd_name].get_desc_string());
+
+static func print_all_cvars():
+    var all_cvars = GDKonsole.cvars;
+    GDKonsole.write_line("List of registered CVars:");
+    for var_name in all_cvars.keys():
+        GDKonsole.write_line(all_cvars[var_name].get_desc_string());
 
 static func exec(path: String):
     var script = FileAccess.open(path, FileAccess.READ);
@@ -17,6 +23,12 @@ static func exec(path: String):
     while !script.eof_reached():
         var line = script.get_line();
         GDKonsole.eval(line);
+
+static func eval(gdscript: String):
+    var expression = Expression.new();
+    expression.parse(gdscript);
+    var result = expression.execute();
+    GDKonsole.write_line(str(result));
 
 # InputMap
 

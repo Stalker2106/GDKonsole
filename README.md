@@ -112,7 +112,7 @@ The console binds signals to Commands, you can connect them and perform actions 
 var my_cmd = GDKonsole.add_command("destroy_world", world_manager, "destroy");
 
 await my_cmd.called;
-print("The command was called!" % value);
+print("The command was called!");
 ```
 
 CVars also provide signals:
@@ -144,11 +144,24 @@ If you want the console to match your theme, simply override its theme using
 GDKonsole.override_theme(my_theme); # my_theme is a Resource of type Theme
 ```
 
+#### Configure features
+
+A file `config.gd` exists at root folder of theme implementing all variables used by GDKonsole.
+Any config variable can be overriden, directly on GDKonsole object
+
+```gdscript
+GDKonsole.config.enable_log_to_file = true;
+GDKonsole.config.max_lines = 800;
+```
 ### Builtins
 
-help - Prints all commands and their usage.
-exec - Run all commands from file at given path.
-inspect <node_path:String> - Inspects node at given node_path
+echo <text:String>  Prints text to console
+commands  Shows all existing commands
+cvars  Shows all registered CVars
+exec <path:String>  Executes a file containing commands from given path (line by line)
+eval <gdscript:String>  Evaluates a snippet of GDScript and prints result
+inspect <node_path:String>  Inspects node at node_path
+
 
 ---
  

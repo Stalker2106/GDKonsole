@@ -1,7 +1,6 @@
 @tool
 extends EditorPlugin
 
-
 func _enable_plugin() -> void:
     self.add_autoload_singleton("GDKonsole", get_script().resource_path.get_base_dir()+"/console/gdkonsole.gd");
     # Add toggle action
