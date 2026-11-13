@@ -10,7 +10,7 @@ var cvar_var = 0;
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-    var hint = get_node("Hint");
+    var hint = get_node("Layout/Hint");
     var events = InputMap.action_get_events("gdkonsole_toggle");
     if events.size() > 0:
         var key_string = OS.get_keycode_string(events[0].physical_keycode);
@@ -25,6 +25,13 @@ func assert_true(value: bool) -> void:
     else:
         GDKonsole.write_error("FAIL");
         failing += 1;
+
+# Console text marker, so a test only inspects what it wrote itself
+func console_mark() -> int:
+    return GDKonsole.content.get_parsed_text().length();
+
+func console_text_since(mark: int) -> String:
+    return GDKonsole.content.get_parsed_text().substr(mark);
 
 func print_summary() -> void:
     GDKonsole.write_line("Results: %d passed, %d failed" % [passing, failing], Color.NAVY_BLUE);
@@ -62,22 +69,29 @@ func run_api_tests():
     assert_true(exec_called);
     # Test
     GDKonsole.write_line("Test 8: push_error redirect");
+    var intercept_enabled = GDKonsole.config.enable_gderror_intercept;
+    GDKonsole.config.enable_gderror_intercept = true;
+    var mark = console_mark();
     push_error("I am a Godot error");
-    assert_true(true);
+    GDKonsole.config.enable_gderror_intercept = intercept_enabled;
+    assert_true(console_text_since(mark).contains("I am a Godot error"));
     # Test
     GDKonsole.write_line("Test 9: register cvar");
     var cvar = GDKonsole.add_cvar("cvar", self, "cvar_var");
     assert_true(cvar != null);
     # Test
-    GDKonsole.write_line("Test 9: set cvar");
+    GDKonsole.write_line("Test 10: set cvar");
     GDKonsole.eval("cvar 1");
     assert_true(cvar_var == 1);
-    assert_true(cvar != null);
     # Test
-    GDKonsole.write_line("Test 10: test help builtins");
+    GDKonsole.write_line("Test 11: test help builtins");
+    mark = console_mark();
     GDKonsole.eval("commands");
     GDKonsole.eval("cvars");
-    assert_true(true);
+    var help_text = console_text_since(mark);
+    assert_true(help_text.contains("test <arg:int>  I am a test") \
+        && help_text.contains("List of registered CVars:") \
+        && help_text.contains("cvar"));
     # Summary
     print_summary();
        

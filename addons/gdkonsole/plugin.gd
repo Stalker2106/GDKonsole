@@ -10,7 +10,7 @@ func _enable_plugin() -> void:
 func _disable_plugin() -> void:
     self.remove_autoload_singleton("GDKonsole");
     # Remove toggle action
-    if not InputMap.has_action("gdkonsole_toggle"):
+    if InputMap.has_action("gdkonsole_toggle"):
         InputMap.erase_action("gdkonsole_toggle");
 
 func _enter_tree():

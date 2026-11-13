@@ -24,8 +24,8 @@ func _on_text_changed(new_text: String):
     autocomplete.update(new_text);
 
 func _input(event: InputEvent) -> void:
-    if !visible:
-        return; # Do nothing if not visible
+    if !is_visible_in_tree():
+        return; # Do nothing if console is hidden
     grab_focus();
     var control_pressed = Input.is_key_pressed(KEY_CTRL);
     if event is InputEventKey && event.is_pressed():
@@ -50,7 +50,9 @@ func _input(event: InputEvent) -> void:
                     get_viewport().set_input_as_handled();
             KEY_A:
                 if control_pressed:
-                    overwrite_text(text.substr(0, get_caret_column()), true);
+                    # Move caret to beginning of line
+                    deselect();
+                    set_caret_column(0);
                     get_viewport().set_input_as_handled();
                     
 

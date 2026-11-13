@@ -1,7 +1,7 @@
 extends RefCounted
 
 # Behaviour
-var console_height: String = "40%";
+var console_height: String = "60%";
 var max_lines: int = 500;
 var toggle_speed: float = 2.0;
 

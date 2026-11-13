@@ -13,8 +13,9 @@ func _init(name_: String, target_obj_: Object, target_property_: String):
     target_obj = target_obj_;
     target_property = target_property_;
 
-func set_description(desc: String):
+func set_description(desc: String) -> GDKonsoleCvar:
     description = desc;
+    return self;
 
 func get_value() -> Variant:
     return target_obj.get(target_property);
@@ -34,6 +35,8 @@ func set_value(argv: Array) -> void:
     if val is String:
         var type_hint = typeof(target_obj.get(target_property));
         val = GDKonsole.str_to_variant(argv[0], type_hint);
+        if GDKonsole.is_parse_failure(val, argv[0]):
+            return; # Error already reported, keep current value
     target_obj.set(target_property, val);
     value_set.emit(val);
 

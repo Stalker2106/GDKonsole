@@ -43,15 +43,15 @@ func execute(argv : Array):
     var arg_count = arguments.size();
     var req_arg_count = get_req_arg_count();
     # Handle wrong arguments count
-    if argc != req_arg_count:
-        if argc > arg_count:
-            GDKonsole.write_error("Error: Too many arguments: command expects %d arguments, %d provided." % [req_arg_count, argc]);
-        elif argc < req_arg_count:
-            GDKonsole.write_error("Error: Missing arguments: command expects %d arguments, %d provided." % [req_arg_count, argc]);
+    if argc > arg_count:
+        GDKonsole.write_error("Error: Too many arguments: command expects at most %d arguments, %d provided." % [arg_count, argc]);
         return;
-    # Insert default values
-    for arg_idx in range(0, arg_count - argc):
-        argv.push_front(arguments[arg_idx].default);
+    if argc < req_arg_count:
+        GDKonsole.write_error("Error: Missing arguments: command expects at least %d arguments, %d provided." % [req_arg_count, argc]);
+        return;
+    # Fill omitted trailing arguments with their default values
+    for arg_idx in range(argc, arg_count):
+        argv.push_back(arguments[arg_idx].default);
     # Check cb arguments
     var cb_arg_count = callback.get_argument_count();
     if argv.size() != cb_arg_count:
@@ -63,7 +63,10 @@ func execute(argv : Array):
         var expected_type = arguments[arg_idx].type;
         # Handle extracting args from prompt string (default values are variant injected)
         if argv[arg_idx] is String:
-            casted_argv.push_back(GDKonsole.str_to_variant(argv[arg_idx], expected_type));
+            var casted = GDKonsole.str_to_variant(argv[arg_idx], expected_type);
+            if GDKonsole.is_parse_failure(casted, argv[arg_idx]):
+                return; # Error already reported, do not execute
+            casted_argv.push_back(casted);
         else:
             casted_argv.push_back(argv[arg_idx]);
     callback.callv(casted_argv);

@@ -6,7 +6,6 @@ var logfile : FileAccess;
 func _ready():
     open_logfile();
     scroll_container = get_parent();
-    push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
 
 func open_logfile():
     if !GDKonsole.config.enable_log_to_file:
@@ -25,7 +24,7 @@ func open_logfile():
 
 func write(msg: String = "", color: Color = GDKonsole.colors.default):
     # Remove lines exceeding quota
-    while get_line_count() > GDKonsole.config.max_lines:
+    while get_paragraph_count() > GDKonsole.config.max_lines:
         remove_paragraph(0);
     var formatted_msg = msg;
     # Apply color if needed
@@ -44,7 +43,6 @@ func write_line(msg: String = "", color: Color = GDKonsole.colors.default):
     if GDKonsole.config.enable_log_to_file:
         logfile.store_8(10); # ASCII for \n
         logfile.flush();
-    push_paragraph(HORIZONTAL_ALIGNMENT_LEFT);
     write(msg, color);
 
 func write_texture(tex_path: String):

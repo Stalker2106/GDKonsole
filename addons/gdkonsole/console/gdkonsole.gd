@@ -1,6 +1,6 @@
 extends Node
 
-signal toggled;
+signal toggled(is_visible: bool);
 
 var GUIScene = preload("../GUI.tscn");
 
@@ -17,6 +17,9 @@ var commands : Dictionary;
 var cvars : Dictionary;
 
 var visible : bool;
+
+# Set while write_error forwards to push_error, so the logger intercept doesn't echo it back
+var suppress_intercept : bool = false;
 
 func _init() -> void:
     commands = {};
@@ -48,7 +51,7 @@ func _ready() -> void:
     if config.allow_inputmap_edition:
         add_command("bind", builtins, "bind").add_argument("key", TYPE_STRING) \
             .add_argument("action", TYPE_STRING).set_description("Binds a key to an action");
-        add_command("unbind", builtins, "bind").add_argument("key", TYPE_STRING) \
+        add_command("unbind", builtins, "unbind").add_argument("key", TYPE_STRING) \
             .add_argument("action", TYPE_STRING).set_description("Unbinds a key from an action");
     if config.allow_tree_edition:
         add_command("inspect", builtins, "inspect_node").add_argument("node_path", TYPE_STRING) \
@@ -80,7 +83,7 @@ func reload_config():
     var height_percent = GDKonsole.config.console_height.replace("%", "");
     if !height_percent.is_valid_float():
         write_error("Error: constant `console_height` has invalid value (must be \"X%\")");
-        height_percent = "40%"; # Set 40% as default
+        height_percent = "40"; # Set 40% as default
     var size_factor = float(height_percent) / 100;
     console.size = Vector2(vp_size.x, vp_size.y * size_factor);
     console.position = Vector2(0, -console.size.y if !gui.visible else 0);
@@ -99,12 +102,15 @@ func override_theme(new_theme: Theme):
 func _input(event: InputEvent) -> void:
     if event.is_action_pressed("gdkonsole_toggle"):
         get_viewport().set_input_as_handled();
-        emit_signal("toggled", visible);
         if !gui.visible:
+            visible = true;
+            toggled.emit(visible);
             gui.visible = true;
             animator.play("Dropdown", -1, config.toggle_speed);
             kinput.grab_focus();
         else:
+            visible = false;
+            toggled.emit(visible);
             kinput.release_focus();
             animator.play("Dropdown", -1, -config.toggle_speed, true);
             await animator.animation_finished;
@@ -115,22 +121,22 @@ func register_guard(identifier: String) -> bool:
         write_error("Error: unable to register `%s`. Invalid identifier" % identifier);
         return false;
     if commands.has(identifier) || cvars.has(identifier):
-        write_error("Error: unable to register `%s`. Overrides existing command/cvar" % name);
+        write_error("Error: unable to register `%s`. Overrides existing command/cvar" % identifier);
         return false;
     return true;
 
 func add_cvar(name: String, target_obj: Object, target_property: String) -> GDKonsoleCvar:
     if !register_guard(name):
-        return;
+        return null;
     var cvar = GDKonsoleCvar.new(name, target_obj, target_property);
     cvars[name] = cvar;
     return cvar;
 
 func add_command(name: String, target_obj: Object, target_method: String) -> GDKonsoleCommand:
     if !register_guard(name):
-        return;
+        return null;
     if !target_obj.has_method(target_method):
-        write_error("Error: unable to register `%s`. Method `%s` doesn't exist in target object" % name);
+        write_error("Error: unable to register `%s`. Method `%s` doesn't exist in target object" % [name, target_method]);
         return null;
     var cmd = GDKonsoleCommand.new(name, target_obj, target_method);
     commands[name] = cmd;
@@ -196,13 +202,18 @@ func eval(buffer: String, historize: bool = false) -> bool:
     return false;
 
 # Content passthrough
-func write(err: String = "", color: Color = colors.default):
-    content.write_line(err, color);
+func write(msg: String = "", color: Color = colors.default):
+    content.write(msg, color);
 
-func write_line(err: String = "", color: Color = colors.default):
-    content.write_line(err, color);
-    
-func write_error(err: String = ""):
+func write_line(msg: String = "", color: Color = colors.default):
+    content.write_line(msg, color);
+
+func write_error(err: String = "", forward_to_godot: bool = true):
+    if forward_to_godot && !suppress_intercept:
+        # Prevent the logger intercept from re-writing (and re-pushing) this error
+        suppress_intercept = true;
+        push_error(content.strip_bbcode(err));
+        suppress_intercept = false;
     content.write_line(err, colors.error);
 
 func write_texture(tex_path: String):
@@ -235,5 +246,12 @@ static func str_to_variant(str: String, expected_type: Variant.Type) -> Variant:
         TYPE_STRING:
             return str;
         _:
-            return str_to_var(str);
+            var value = str_to_var(str);
+            if value == null && str != "null":
+                GDKonsole.write_error("Error: %s is not a valid %s." % [str, type_string(expected_type)]);
+            return value;
     return null;
+
+# Returns true when str_to_variant failed to convert source (it returns null on failure)
+static func is_parse_failure(value: Variant, source: String) -> bool:
+    return value == null && source != "null";

@@ -12,8 +12,8 @@ func _ready() -> void:
     layout = get_node("Layout");
 
 func _input(event: InputEvent) -> void:
-    if !visible:
-        return; # Do nothing if not visible
+    if !is_visible_in_tree():
+        return; # Do nothing if not visible (or console hidden)
     var shift_pressed = Input.is_key_pressed(KEY_SHIFT);
     if event is InputEventKey && event.is_pressed():
         if event.keycode == KEY_TAB:
@@ -27,9 +27,13 @@ func move_autocomplete_idx(amount: int):
         if old_entry:
             old_entry.add_theme_stylebox_override("normal", StyleBoxEmpty.new());
     # Move autocomplete cursor
+    # Cycle through [-1 (input text), 0 .. count-1]
+    var count = layout.get_child_count();
     autocomplete_idx += amount;
-    if autocomplete_idx >= layout.get_child_count():
+    if autocomplete_idx >= count:
         autocomplete_idx = -1;
+    elif autocomplete_idx < -1:
+        autocomplete_idx = count - 1;
     # Reset back to input
     if autocomplete_idx == -1:
         get_parent().overwrite_text(temp, false);
@@ -95,7 +99,11 @@ func add_entry(entry_data: Dictionary):
 func clear_entries():
     autocomplete_idx = -1;
     for child in layout.get_children():
+        # Detach immediately so child count/indices are correct before the frame ends
+        layout.remove_child(child);
         child.queue_free();
 
 func get_entry(idx: int) -> RichTextLabel:
+    if idx < 0 || idx >= layout.get_child_count():
+        return null;
     return layout.get_child(idx);

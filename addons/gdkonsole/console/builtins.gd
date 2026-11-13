@@ -24,11 +24,37 @@ static func exec(path: String):
         var line = script.get_line();
         GDKonsole.eval(line);
 
+# Evaluates a single GDScript expression (`1 + 2`, `get_tree().root.name`, `Engine.time_scale`...)
+# and prints its result.
 static func eval(gdscript: String):
+    var code = gdscript.strip_edges();
+    if code.is_empty():
+        return;
+    var inputs = get_expression_inputs();
     var expression = Expression.new();
-    expression.parse(gdscript);
-    var result = expression.execute();
+    if expression.parse(code, inputs.keys()) != OK:
+        GDKonsole.write_error("Error: failed to parse expression: %s" % expression.get_error_text());
+        return;
+    var result = expression.execute(inputs.values(), GDKonsole);
+    if expression.has_execute_failed():
+        GDKonsole.write_error("Error: failed to execute expression: %s" % expression.get_error_text());
+        return;
     GDKonsole.write_line(str(result));
+
+# Expression only knows its base instance and explicit inputs: expose engine
+# singletons (Engine, Input, OS...) and autoloads so they're usable like in GDScript.
+static func get_expression_inputs() -> Dictionary:
+    var inputs = {};
+    for singleton_name in Engine.get_singleton_list():
+        inputs[singleton_name] = Engine.get_singleton(singleton_name);
+    var root = (Engine.get_main_loop() as SceneTree).root;
+    for property in ProjectSettings.get_property_list():
+        var setting : String = property.name;
+        if setting.begins_with("autoload/"):
+            var autoload = root.get_node_or_null(setting.trim_prefix("autoload/"));
+            if autoload:
+                inputs[autoload.name] = autoload;
+    return inputs;
 
 # InputMap
 

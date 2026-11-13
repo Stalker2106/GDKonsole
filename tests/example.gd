@@ -10,12 +10,69 @@ var time_limit := 0
 var frag_limit := 30
 var friendly_fire := false
 var respawn_time := 5.0
+
+func load_map(map_name: String) -> void:
+    print("[GameManager] Loading map: %s" % map_name)
+
+func restart_map() -> void:
+    print("[GameManager] Restarting current map")
+
+func quit_game() -> void:
+    print("[GameManager] Quitting game")
+    get_tree().quit()
+
+func enable_cheats(enable: bool = false) -> void:
+    cheats_enabled = enable
+    print("[GameManager] Cheats %s" % ("enabled" if enable else "disabled"))
+
+func set_timescale(scale: float = 1.0) -> void:
+    Engine.time_scale = scale
+    print("[GameManager] Time scale set to %.2f" % scale)
 """
     GameManager.reload()
 
     var ActorManager = GDScript.new()
     ActorManager.source_code = """
 extends Node
+
+func kill_self() -> void:
+    print("[ActorManager] Player killed self")
+
+func kill_player(player_id: int) -> void:
+    print("[ActorManager] Killed player with ID: %d" % player_id)
+
+func kill_all_actors(include_player: bool = false) -> void:
+    print("[ActorManager] Killed all NPCs" + (" (including player)" if include_player else ""))
+
+func give_health(amount: int = 100) -> void:
+    print("[ActorManager] Gave %d health to local player" % amount)
+
+func give_armor(amount: int = 100) -> void:
+    print("[ActorManager] Gave %d armor to local player" % amount)
+
+func give_ammo(weapon_id: int, amount: int = 50) -> void:
+    print("[ActorManager] Gave %d ammo for weapon slot %d" % [amount, weapon_id])
+
+func give_weapon(weapon_id: int) -> void:
+    print("[ActorManager] Gave weapon ID: %d to player" % weapon_id)
+
+func set_godmode(enable: bool = true) -> void:
+    print("[ActorManager] God mode %s" % ("enabled" if enable else "disabled"))
+
+func set_noclip(enable: bool = true) -> void:
+    print("[ActorManager] Noclip %s" % ("enabled" if enable else "disabled"))
+
+func set_notarget(enable: bool = true) -> void:
+    print("[ActorManager] Notarget %s" % ("enabled" if enable else "disabled"))
+
+func set_player_speed(speed: float = 300.0) -> void:
+    print("[ActorManager] Player speed set to %.1f" % speed)
+
+func spawn_actor(actor_name: String, x: float = 0.0, y: float = 0.0) -> void:
+    print("[ActorManager] Spawning '%s' at (%.1f, %.1f)" % [actor_name, x, y])
+
+func teleport_player(x: float, y: float) -> void:
+    print("[ActorManager] Teleporting player to (%.1f, %.1f)" % [x, y])
 """
     ActorManager.reload()
 
@@ -31,6 +88,18 @@ var fullbright := false
 var draw_world := true
 var shadows_enabled := true
 var wireframe_mode := false
+
+func take_screenshot(filename: String = "screenshot") -> void:
+    print("[Renderer] Screenshot saved to user://%s.png" % filename)
+
+func reload_shaders() -> void:
+    print("[Renderer] Reloading all shaders")
+
+func list_shaders() -> void:
+    print("[Renderer] Listing all loaded shaders:")
+    print("  - world.gdshader")
+    print("  - actor.gdshader")
+    print("  - postprocess.gdshader")
 """
     Renderer.reload()
 
@@ -40,12 +109,38 @@ extends Node
 var listen_port := 27015
 var max_clients := 16
 var tick_rate := 64
+
+func kick_player(player_id: int, reason: String = "Kicked by admin") -> void:
+    print("[Server] Kicked player %d: %s" % [player_id, reason])
+
+func ban_player(player_id: int) -> void:
+    print("[Server] Banned player %d" % player_id)
+
+func broadcast_message(message: String) -> void:
+    print("[Server] [ALL] %s" % message)
+
+func print_status() -> void:
+    print("[Server] Status:")
+    print("  Map: current_map")
+    print("  Players: 0 / %d" % max_clients)
+    print("  Tickrate: %d" % tick_rate)
+    print("  Port: %d" % listen_port)
+
+func change_level(map_name: String) -> void:
+    print("[Server] Changing level to: %s (keeping clients connected)" % map_name)
 """
     Server.reload()
 
     var Network = GDScript.new()
     Network.source_code = """
 extends Node
+
+func print_net_stats() -> void:
+    print("[Network] Network statistics:")
+    print("  Ping: 0 ms")
+    print("  Packet loss: 0.0%%")
+    print("  Bandwidth in: 0 KB/s")
+    print("  Bandwidth out: 0 KB/s")
 """
     Network.reload()
 

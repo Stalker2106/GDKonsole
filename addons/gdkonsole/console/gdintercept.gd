@@ -4,7 +4,7 @@ func _log_message(message: String, error: bool) -> void:
     if !GDKonsole.config.enable_gdmessage_intercept:
         return; #Logging messages are disabled
     if error:
-        GDKonsole.write_error(message);
+        GDKonsole.write_error(message, false); # Already logged by Godot, don't re-push
     else:
         GDKonsole.write_line(message);
 
@@ -20,6 +20,8 @@ func _log_error(
 ) -> void:
     if !GDKonsole.config.enable_gderror_intercept:
         return; #Logging errors are disabled
+    if GDKonsole.suppress_intercept:
+        return; # Error originates from GDKonsole.write_error, already displayed
     var location = "%s:%d (%s)" % [file, line, function]
     var msg = "[%s] %s — %s" % [code, rationale, location]
     
@@ -27,4 +29,4 @@ func _log_error(
     for bt in script_backtraces:
         msg += "\n  " + bt.to_string()  # check actual ScriptBacktrace API
     
-    GDKonsole.write_error(msg);
+    GDKonsole.write_error(msg, false); # Already logged by Godot, don't re-push
